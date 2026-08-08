@@ -28,7 +28,7 @@ export function CharacterBubble({
             {replyText}
           </p>
 
-          {/* Traducción al Español directo en la tarjeta */}
+          {/* Traducción al Español */}
           {translationText && (
             <p className="text-[#8ECAE6] text-xs font-semibold mt-1.5 leading-snug">
               {translationText}
@@ -36,7 +36,7 @@ export function CharacterBubble({
           )}
         </div>
 
-        {/* Botón de reproducción de audio (Círculo Cian Mondly) */}
+        {/* Botón de reproducción de audio */}
         {onPlayAudio && (
           <button
             onClick={() => onPlayAudio(replyText)}
@@ -50,3 +50,5 @@ export function CharacterBubble({
     </div>
   );
 }
+
+export default CharacterBubble;
