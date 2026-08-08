@@ -138,3 +138,36 @@ export function InteractiveDock({
     </div>
   );
 }
+// Fragmento para grabar audio en Blob -> Base64
+const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+
+const startRecording = async () => {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+  const audioChunks: Blob[] = [];
+
+  recorder.ondataavailable = (event) => audioChunks.push(event.data);
+  recorder.onstop = async () => {
+    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+    const reader = new FileReader();
+    reader.readAsDataURL(audioBlob);
+    reader.onloadend = async () => {
+      const base64Audio = (reader.result as string).split(',')[1];
+      
+      // Enviar a la API para evaluación
+      const response = await fetch('/api/evaluate-pronunciation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          audioBase64: base64Audio,
+          expectedText: inputText,
+        }),
+      });
+      const evalData = await response.json();
+      console.log('Evaluación de pronunciación:', evalData);
+    };
+  };
+
+  recorder.start();
+  setMediaRecorder(recorder);
+};
