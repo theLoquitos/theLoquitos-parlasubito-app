@@ -232,5 +232,69 @@ async function startServer() {
     console.log(`Server running on port ${PORT}`);
   });
 }
+app.post('/api/evaluate-pronunciation', async (req, res) => {
+  try {
+    const { audioBase64, expectedText } = req.body;
 
+    if (!audioBase64 || !expectedText) {
+      return res.status(400).json({ error: 'Audio and expectedText are required' });
+    }
+
+    const prompt = `
+You are an expert Italian phonetics coach. Listen to the student's recorded audio trying to say:
+"${expectedText}"
+
+Evaluate their Italian pronunciation based on:
+1. Phonetic accuracy (correct Italian vowel sounds, double consonants "doppie", "gli", "gn", "sc", "c/g" sounds).
+2. Stress accent and rhythm.
+3. Clarity and fluency.
+
+Return STRICT JSON matching the schema:
+- score: integer from 0 to 100
+- phoneticErrors: list of specific words/phonemes mispronounced
+- feedback: clear, encouraging advice in Spanish on how to fix their pronunciation
+- nativeTip: a tip about Italian phonetics or cadence relevant to this sentence
+`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.6-flash',
+      contents: [
+        {
+          parts: [
+            {
+              inlineData: {
+                mimeType: 'audio/webm',
+                data: audioBase64,
+              },
+            },
+            { text: prompt },
+          ],
+        },
+      ],
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            score: { type: Type.INTEGER, description: 'Score between 0 and 100' },
+            phoneticErrors: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING },
+              description: 'List of words or sounds mispronounced',
+            },
+            feedback: { type: Type.STRING, description: 'Direct evaluation in Spanish' },
+            nativeTip: { type: Type.STRING, description: 'Phonetic rule or native advice' },
+          },
+          required: ['score', 'phoneticErrors', 'feedback', 'nativeTip'],
+        },
+      },
+    });
+
+    const result = parseCleanJson(response.text);
+    return res.json(result);
+  } catch (error: any) {
+    console.error('Error evaluando pronunciación:', error);
+    return res.status(500).json({ error: 'Failed to evaluate pronunciation' });
+  }
+});
 startServer();
