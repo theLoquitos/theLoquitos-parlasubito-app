@@ -20,7 +20,6 @@ const ai = new GoogleGenAI({
   },
 });
 
-// Función auxiliar para limpiar respuestas en formato JSON
 function parseCleanJson(text: string | undefined) {
   if (!text) return {};
   const cleaned = text
