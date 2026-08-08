@@ -355,31 +355,31 @@ export function App() {
           </div>
         )}
 
-     <main className="max-w-2xl mx-auto py-3 px-2">
-  {messages.map((m, idx) =>
-    m.sender === 'ai' ? (
-      <CharacterBubble
-        key={idx}
-        personaName={selectedScenario.personaName}
-        replyText={m.text}
-        translationText={m.translation}
-        onPlayAudio={handlePlayAudio}
-      />
-    ) : (
-      /* Burbuja de respuesta del estudiante (Estilo Mondly) */
-      <div key={idx} className="flex justify-end my-3 px-2">
-        <div className="bg-[#1A3A60] border border-blue-400/30 text-white p-4 rounded-2xl rounded-tr-none max-w-md shadow-xl flex items-center gap-3">
-          <div className="flex-1">
-            <p className="text-white font-extrabold text-base sm:text-lg leading-snug">{m.text}</p>
-          </div>
-          <div className="w-8 h-8 rounded-full bg-[#FF5A20]/20 border border-[#FF5A20]/60 flex items-center justify-center text-[10px] font-black text-orange-400 shrink-0">
-            TÚ
-          </div>
-        </div>
-      </div>
-    )
-  )}
-</main>
+        {/* Único contenedor principal de la conversación */}
+        <main className="max-w-2xl mx-auto py-3 px-2">
+          {messages.map((m, idx) =>
+            m.sender === 'ai' ? (
+              <CharacterBubble
+                key={idx}
+                personaName={selectedScenario.personaName}
+                replyText={m.text}
+                translationText={m.translation}
+                onPlayAudio={handlePlayAudio}
+              />
+            ) : (
+              <div key={idx} className="flex justify-end my-3 px-2">
+                <div className="bg-[#1A3A60] border border-blue-400/30 text-white p-4 rounded-2xl rounded-tr-none max-w-md shadow-xl flex items-center gap-3">
+                  <div className="flex-1">
+                    <p className="text-white font-extrabold text-base sm:text-lg leading-snug">{m.text}</p>
+                  </div>
+                  <div className="w-8 h-8 rounded-full bg-[#FF5A20]/20 border border-[#FF5A20]/60 flex items-center justify-center text-[10px] font-black text-orange-400 shrink-0">
+                    TÚ
+                  </div>
+                </div>
+              </div>
+            )
+          )}
+        </main>
       </div>
 
       <InteractiveDock
