@@ -26,6 +26,7 @@ export interface Scenario {
   personaRole: string;
   description: string;
   avatarIcon: string;
+  avatarUrl: string;
   level: 'Fácil' | 'Medio' | 'Experto';
   goals: Goal[];
 }
