@@ -20,6 +20,21 @@ const ai = new GoogleGenAI({
   },
 });
 
+// Función auxiliar para limpiar respuestas en formato JSON
+function parseCleanJson(text: string | undefined) {
+  if (!text) return {};
+  const cleaned = text
+    .replace(/```json/gi, '')
+    .replace(/```/g, '')
+    .trim();
+  try {
+    return JSON.parse(cleaned);
+  } catch (e) {
+    console.error('Error parseando JSON:', e, 'Texto original:', text);
+    return {};
+  }
+}
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
@@ -119,10 +134,7 @@ Respond in character. Evaluate mistakes, select avatar expression ("HAPPY", "TEA
       },
     });
 
-    const rawText = response.text || '{}';
-    const cleanJsonText = rawText.replace(/^```json\s*|\s*```$/g, '').trim();
-    const parsedData = JSON.parse(cleanJsonText);
-
+    const parsedData = parseCleanJson(response.text);
     return res.json(parsedData);
   } catch (error: any) {
     console.error('Error in /api/chat:', error);
@@ -168,4 +180,58 @@ Provide 2 short conceptual hints in Spanish explaining WHAT topic or idea the st
       },
     });
 
-    const cleanJson = (response.text || '{}').replace(/^```json\s*|\s*
+    const parsedData = parseCleanJson(response.text);
+    return res.json(parsedData);
+  } catch (error: any) {
+    return res.status(500).json({ error: 'Failed to generate hints' });
+  }
+});
+
+app.post('/api/tts', async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text) return res.status(400).json({ error: 'Text is required' });
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.1-flash-tts-preview',
+      contents: [{ parts: [{ text: `Say in clear Italian with slow pace: ${text}` }] }],
+      config: {
+        responseModalities: ['AUDIO' as any],
+        speechConfig: {
+          voiceConfig: {
+            prebuiltVoiceConfig: { voiceName: 'Kore' },
+          },
+        },
+      },
+    });
+
+    const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+    if (!base64Audio) return res.status(500).json({ error: 'No audio generated' });
+
+    return res.json({ audioBase64: base64Audio, mimeType: 'audio/mp3' });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'TTS failed' });
+  }
+});
+
+async function startServer() {
+  if (process.env.NODE_ENV !== 'production') {
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
+    });
+    app.use(vite.middlewares);
+  } else {
+    const distPath = path.join(process.cwd(), 'dist');
+    app.use(express.static(distPath));
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
+  }
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+startServer();
