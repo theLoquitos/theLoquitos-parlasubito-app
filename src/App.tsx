@@ -1,330 +1,216 @@
-import React, { useState, useEffect } from 'react';
-import { Header } from './components/Header';
-import { HomeScreen } from './components/HomeScreen';
-import { ChatWindow } from './components/ChatWindow';
-import { VocabularyDrawer } from './components/VocabularyDrawer';
-import { ScenarioCompletionModal } from './components/ScenarioCompletionModal';
-import { PREDEFINED_SCENARIOS } from './data/scenarios';
-import {
-  Scenario,
-  ChatMessage,
-  UserSettings,
-  SavedPhrase,
-  CorrectionInfo,
-  SuggestedReply,
-} from './types';
-import {
-  getSavedPhrases,
-  savePhrase,
-  deletePhrase,
-  getUserSettings,
-  saveUserSettings,
-  getCompletedScenarioIds,
-  markScenarioCompleted,
-} from './utils/storage';
-import { speakItalian } from './utils/speech';
+import React, { useState } from 'react';
+import { Scenario, AvatarState, Correction, CoachingTip, Message } from './types';
+import { AvatarHeader } from './components/AvatarHeader';
+import { FloatingCorrectionCard } from './components/FloatingCorrectionCard';
+import { CharacterBubble } from './components/CharacterBubble';
+import { InteractiveDock } from './components/InteractiveDock';
 
-export default function App() {
-  const [scenarios, setScenarios] = useState<Scenario[]>(PREDEFINED_SCENARIOS);
-  const [activeScenario, setActiveScenario] = useState<Scenario | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [goals, setGoals] = useState<Scenario['goals']>([]);
+const SCENARIOS: Scenario[] = [
+  {
+    id: 'bar',
+    title: 'Al Bar',
+    locationName: 'Roma',
+    personaName: 'Marco',
+    personaRole: 'Barista',
+    description: 'Pide un café y un cornetto en el centro de Roma.',
+    avatarIcon: '☕',
+    goals: [
+      { id: '1', label: 'Pedir café y factura', completed: false },
+      { id: '2', label: 'Pagar con educación', completed: false },
+    ],
+  },
+  {
+    id: 'gelato',
+    title: 'Gelateria',
+    locationName: 'Florencia',
+    personaName: 'Lorenzo',
+    personaRole: 'Maestro Heladero',
+    description: 'Pide tus sabores preferidos en cono o vaso.',
+    avatarIcon: '🍦',
+    goals: [
+      { id: '1', label: 'Pedir recomendación', completed: false },
+      { id: '2', label: 'Elegir cono o vaso', completed: false },
+    ],
+  },
+];
+
+export function App() {
+  const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
+  const [avatarState, setAvatarState] = useState<AvatarState>('HAPPY');
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [latestCorrection, setLatestCorrection] = useState<Correction | undefined>();
+  const [latestCoachingTip, setLatestCoachingTip] = useState<CoachingTip | undefined>();
   const [isLoading, setIsLoading] = useState(false);
-  const [isHintLoading, setIsHintLoading] = useState(false);
+  const [hintText, setHintText] = useState<string | null>(null);
 
-  const [activeCorrection, setActiveCorrection] = useState<CorrectionInfo | undefined>(undefined);
-  const [hintSuggestions, setHintSuggestions] = useState<SuggestedReply[]>([]);
-
-  const [savedPhrases, setSavedPhrases] = useState<SavedPhrase[]>([]);
-  const [settings, setSettings] = useState<UserSettings>(getUserSettings());
-  const [completedScenarioIds, setCompletedScenarioIds] = useState<string[]>([]);
-
-  const [isVocabularyOpen, setIsVocabularyOpen] = useState(false);
-  const [isScenarioCompleted, setIsScenarioCompleted] = useState(false);
-
-  // Load saved state on mount
-  useEffect(() => {
-    setSavedPhrases(getSavedPhrases());
-    setCompletedScenarioIds(getCompletedScenarioIds());
-  }, []);
-
-  // Save settings when updated
-  const handleUpdateSettings = (newSettings: UserSettings) => {
-    setSettings(newSettings);
-    saveUserSettings(newSettings);
+  const startScenario = (scenario: Scenario) => {
+    setSelectedScenario(scenario);
+    setAvatarState('HAPPY');
+    setMessages([
+      {
+        sender: 'ai',
+        text: `Buongiorno! Benvenuto a ${scenario.locationName}. Sono ${scenario.personaName}, come posso aiutarti oggi?`,
+        translation: `¡Buenos días! Bienvenido a ${scenario.locationName}. Soy ${scenario.personaName}, ¿cómo puedo ayudarte hoy?`,
+      },
+    ]);
+    setLatestCorrection(undefined);
+    setLatestCoachingTip(undefined);
   };
 
-  // Start or change scenario
-  const handleSelectScenario = (scenario: Scenario) => {
-    setActiveScenario(scenario);
-    setGoals(scenario.goals.map((g) => ({ ...g, completed: false })));
-    setIsScenarioCompleted(false);
-    setActiveCorrection(undefined);
-    setHintSuggestions([]);
+  const handleSendMessage = async (userText: string) => {
+    if (!selectedScenario) return;
 
-    const initialMsg: ChatMessage = {
-      id: 'msg_init_' + Date.now(),
-      sender: 'ai',
-      text: scenario.initialMessage,
-      translation: scenario.initialTranslation,
-      timestamp: Date.now(),
-      suggestedReplies: [
-        { text: 'Buongiorno!', translation: 'Good morning!' },
-        { text: 'Vorrei ordinare...', translation: 'I would like to order...' },
-      ],
-    };
-
-    setMessages([initialMsg]);
-
-    // Auto-play initial message if setting enabled
-    if (settings.autoPlayAudio) {
-      setTimeout(() => {
-        speakItalian(scenario.initialMessage, settings.audioSpeed);
-      }, 300);
-    }
-  };
-
-  // Create custom scenario
-  const handleCreateCustomScenario = (title: string, personaRole: string, mainGoalText: string) => {
-    const customScenario: Scenario = {
-      id: 'custom_' + Date.now(),
-      title,
-      subtitle: 'Situazione Personalizzata',
-      icon: '🎭',
-      locationName: 'Italia',
-      personaName: 'Persona locale',
-      personaRole,
-      description: `Conversazione personalizzata: ${mainGoalText}`,
-      initialMessage: `Buongiorno! Benvenuto. Come posso aiutarti oggi per ${title}?`,
-      initialTranslation: `Good morning! Welcome. How can I help you today for ${title}?`,
-      level: 'Principiante',
-      badgeColor: 'bg-purple-100 text-purple-900 border-purple-300',
-      goals: [
-        {
-          id: 'custom_goal_1',
-          label: mainGoalText,
-          description: mainGoalText,
-          completed: false,
-        },
-        {
-          id: 'custom_goal_2',
-          label: 'Salutare e ringraziare',
-          description: 'Concludi la conversazione in modo cordiale',
-          completed: false,
-        },
-      ],
-    };
-
-    setScenarios((prev) => [customScenario, ...prev]);
-    handleSelectScenario(customScenario);
-  };
-
-  // Send message to AI backend
-  const handleSendMessage = async (text: string) => {
-    if (!activeScenario) return;
-
-    const userMsg: ChatMessage = {
-      id: 'msg_user_' + Date.now(),
-      sender: 'user',
-      text,
-      timestamp: Date.now(),
-    };
-
-    setMessages((prev) => [...prev, userMsg]);
+    const newMessages: Message[] = [...messages, { sender: 'user', text: userText }];
+    setMessages(newMessages);
     setIsLoading(true);
+    setAvatarState('THINKING');
 
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          scenario: {
-            ...activeScenario,
-            goals,
-          },
-          history: messages.map((m) => ({ sender: m.sender, text: m.text })),
-          userMessage: text,
+          scenario: selectedScenario,
+          history: newMessages,
+          userMessage: userText,
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('API request failed');
-      }
-
       const data = await response.json();
 
-      // Update goal completion statuses
-      if (data.goalUpdates && Array.isArray(data.goalUpdates)) {
-        setGoals((currentGoals) =>
-          currentGoals.map((g) => {
-            const update = data.goalUpdates.find((u: any) => u.id === g.id);
-            return update ? { ...g, completed: update.completed } : g;
-          })
-        );
+      if (data.avatarExpression) setAvatarState(data.avatarExpression);
+      if (data.correction) setLatestCorrection(data.correction);
+      if (data.coachingTip) setLatestCoachingTip(data.coachingTip);
+
+      if (data.goalUpdates && selectedScenario) {
+        const updatedGoals = selectedScenario.goals.map((g) => {
+          const update = data.goalUpdates.find((u: any) => u.id === g.id);
+          return update ? { ...g, completed: update.completed } : g;
+        });
+        setSelectedScenario({ ...selectedScenario, goals: updatedGoals });
       }
 
-      // Check if all goals are complete
-      const allComplete =
-        data.scenarioCompleted ||
-        (data.goalUpdates &&
-          data.goalUpdates.length > 0 &&
-          goals.every((g) => {
-            const match = data.goalUpdates.find((u: any) => u.id === g.id);
-            return match ? match.completed : g.completed;
-          }));
-
-      if (allComplete) {
-        setIsScenarioCompleted(true);
-        const updatedCompleted = markScenarioCompleted(activeScenario.id);
-        setCompletedScenarioIds(updatedCompleted);
-      }
-
-      // Format AI message
-      const aiMsg: ChatMessage = {
-        id: 'msg_ai_' + Date.now(),
-        sender: 'ai',
-        text: data.replyText,
-        translation: data.translationText,
-        correction: data.correction,
-        suggestedReplies: data.suggestedReplies,
-        timestamp: Date.now(),
-      };
-
-      setMessages((prev) => [...prev, aiMsg]);
-      setActiveCorrection(data.correction);
-
-      if (data.suggestedReplies) {
-        setHintSuggestions(data.suggestedReplies);
-      }
-
-      // Auto play audio if enabled
-      if (settings.autoPlayAudio) {
-        speakItalian(data.replyText, settings.audioSpeed);
-      }
-    } catch (error) {
-      console.error('Error sending message:', error);
-      // Fallback message if network/server issue
-      const fallbackAiMsg: ChatMessage = {
-        id: 'msg_ai_err_' + Date.now(),
-        sender: 'ai',
-        text: 'Scusa, si è verificato un errore di connessione. Puoi riprovare a inviare il tuo messaggio!',
-        translation: 'Sorry, a connection error occurred. You can try sending your message again!',
-        timestamp: Date.now(),
-      };
-      setMessages((prev) => [...prev, fallbackAiMsg]);
+      setMessages([
+        ...newMessages,
+        {
+          sender: 'ai',
+          text: data.replyText,
+          translation: data.translationText,
+        },
+      ]);
+    } catch (err) {
+      console.error('Error al enviar mensaje:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Request Anti-block Hint from server on demand
   const handleRequestHint = async () => {
-    if (!activeScenario) return;
-    setIsHintLoading(true);
+    if (!selectedScenario || messages.length === 0) return;
+    const lastAiMsg = messages.filter((m) => m.sender === 'ai').slice(-1)[0]?.text;
 
     try {
-      const lastAi = messages.filter((m) => m.sender === 'ai').pop();
-      const response = await fetch('/api/hint', {
+      const res = await fetch('/api/hint', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          scenario: activeScenario,
-          lastAiMessage: lastAi ? lastAi.text : '',
-        }),
+        body: JSON.stringify({ scenario: selectedScenario, lastAiMessage: lastAiMsg }),
       });
-
-      if (!response.ok) throw new Error('Hint request failed');
-      const data = await response.json();
-      if (data.hints) {
-        setHintSuggestions(data.hints);
+      const data = await res.json();
+      if (data.hints && data.hints.length > 0) {
+        setHintText(`Pista: ${data.hints[0].concept} (${data.hints[0].tip})`);
       }
-    } catch (e) {
-      console.error('Error getting hints:', e);
-    } finally {
-      setIsHintLoading(false);
+    } catch (err) {
+      setHintText('Prueba saludando o pidiendo el menú.');
     }
   };
 
-  // Save phrase to vocabulary
-  const handleSavePhrase = (italian: string, english: string, context?: string) => {
-    const updated = savePhrase(italian, english, context);
-    setSavedPhrases(updated);
+  const handlePlayAudio = async (text: string) => {
+    try {
+      const res = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+      const data = await res.json();
+      if (data.audioBase64) {
+        const audio = new Audio(`data:audio/mp3;base64,${data.audioBase64}`);
+        audio.play();
+      }
+    } catch (err) {
+      console.error('Error jugando audio:', err);
+    }
   };
 
-  // Delete phrase from vocabulary
-  const handleDeletePhrase = (id: string) => {
-    const updated = deletePhrase(id);
-    setSavedPhrases(updated);
-  };
+  if (!selectedScenario) {
+    return (
+      <div className="min-h-screen bg-[#FAF6F0] p-6 flex flex-col items-center justify-center">
+        <h1 className="text-3xl font-black text-[#2B1E1A] mb-2">ParlaSubito AI 2.0</h1>
+        <p className="text-sm font-semibold text-[#2C4A52] mb-8 text-center max-w-sm">
+          Elige una escena y empieza a hablar italiano desde el primer minuto.
+        </p>
 
-  const savedItalianPhrasesList = savedPhrases.map((p) => p.italian);
+        <div className="w-full max-w-md space-y-4">
+          {SCENARIOS.map((sc) => (
+            <button
+              key={sc.id}
+              onClick={() => startScenario(sc)}
+              className="w-full bg-white border-2 border-[#EADFCF] hover:border-[#E05A47] p-5 rounded-2xl shadow-sm text-left flex items-center gap-4 transition-all active:scale-95"
+            >
+              <span className="text-4xl">{sc.avatarIcon}</span>
+              <div>
+                <h3 className="text-lg font-bold text-[#2B1E1A]">{sc.title}</h3>
+                <p className="text-xs text-stone-500">{sc.personaName} ({sc.personaRole}) • {sc.locationName}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div
-      className={`min-h-screen bg-[#FDFCFB] text-[#1A1A1A] flex flex-col font-sans transition-all selection:bg-[#CE2B37] selection:text-white ${
-        settings.seniorMode ? 'text-lg' : 'text-base'
-      }`}
-    >
-      <Header
-        settings={settings}
-        onUpdateSettings={handleUpdateSettings}
-        savedCount={savedPhrases.length}
-        onOpenVocabulary={() => setIsVocabularyOpen(true)}
-        onGoHome={() => setActiveScenario(null)}
-        isChatActive={!!activeScenario}
-        activeScenarioTitle={activeScenario?.title}
-      />
+    <div className="min-h-screen bg-[#FAF6F0] flex flex-col justify-between">
+      <div>
+        <AvatarHeader scenario={selectedScenario} avatarState={avatarState} />
+        <FloatingCorrectionCard correction={latestCorrection} coachingTip={latestCoachingTip} />
 
-      <main className="flex-1 flex flex-col">
-        {activeScenario ? (
-          <ChatWindow
-            scenario={activeScenario}
-            messages={messages}
-            goals={goals}
-            onSendMessage={handleSendMessage}
-            onRequestHint={handleRequestHint}
-            isLoading={isLoading}
-            isHintLoading={isHintLoading}
-            activeCorrection={activeCorrection}
-            hintSuggestions={hintSuggestions}
-            settings={settings}
-            onSavePhrase={handleSavePhrase}
-            savedItalianPhrases={savedItalianPhrasesList}
-            isCompleted={isScenarioCompleted}
-          />
-        ) : (
-          <HomeScreen
-            scenarios={scenarios}
-            completedScenarioIds={completedScenarioIds}
-            onSelectScenario={handleSelectScenario}
-            onCreateCustomScenario={handleCreateCustomScenario}
-            seniorMode={settings.seniorMode}
-          />
+        {hintText && (
+          <div className="max-w-2xl mx-auto px-4 mb-2">
+            <div className="bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold p-2.5 rounded-xl flex justify-between items-center">
+              <span>{hintText}</span>
+              <button onClick={() => setHintText(null)} className="text-amber-700 font-bold ml-2">✕</button>
+            </div>
+          </div>
         )}
-      </main>
 
-      {/* Vocabulary Drawer */}
-      <VocabularyDrawer
-        isOpen={isVocabularyOpen}
-        onClose={() => setIsVocabularyOpen(false)}
-        savedPhrases={savedPhrases}
-        onDeletePhrase={handleDeletePhrase}
-        audioSpeed={settings.audioSpeed}
-        seniorMode={settings.seniorMode}
+        <main className="max-w-2xl mx-auto py-2">
+          {messages.map((m, idx) =>
+            m.sender === 'ai' ? (
+              <CharacterBubble
+                key={idx}
+                personaName={selectedScenario.personaName}
+                replyText={m.text}
+                translationText={m.translation}
+                onPlayAudio={handlePlayAudio}
+              />
+            ) : (
+              <div key={idx} className="flex justify-end my-2 mx-4">
+                <div className="bg-[#2C4A52] text-white p-3 rounded-2xl rounded-tr-none max-w-xs shadow-sm">
+                  <p className="text-sm font-medium">{m.text}</p>
+                </div>
+              </div>
+            )
+          )}
+        </main>
+      </div>
+
+      <InteractiveDock
+        onSendMessage={handleSendMessage}
+        onRequestHint={handleRequestHint}
+        isLoading={isLoading}
       />
-
-      {/* Scenario Completion Celebration Modal */}
-      {isScenarioCompleted && activeScenario && (
-        <ScenarioCompletionModal
-          scenario={activeScenario}
-          onRestart={() => handleSelectScenario(activeScenario)}
-          onChooseNewScenario={() => {
-            setIsScenarioCompleted(false);
-            setActiveScenario(null);
-          }}
-          audioSpeed={settings.audioSpeed}
-        />
-      )}
     </div>
   );
 }
+
+export default App;
