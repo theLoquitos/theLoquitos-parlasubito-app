@@ -1,0 +1,6 @@
+{
+  "name": "ParlaSubito AI",
+  "description": "Interactive AI Italian Tutor for conversational practice with real-time corrections, audio playback, speech input, and anti-block hints.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
