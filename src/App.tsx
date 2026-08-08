@@ -13,7 +13,7 @@ const SCENARIOS: Scenario[] = [
     locationName: 'Roma',
     personaName: 'Marco',
     personaRole: 'Barista',
-    description: 'Pide un café espresso y un croissant en una cafetería clásica.',
+    description: 'Pide un café espresso y un croissant en el centro de Roma.',
     avatarIcon: '☕',
     avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80',
     level: 'Fácil',
@@ -28,13 +28,13 @@ const SCENARIOS: Scenario[] = [
     locationName: 'Florencia',
     personaName: 'Lorenzo',
     personaRole: 'Maestro Heladero',
-    description: 'Elige tus sabores favoritos y pide en cono o vaso.',
+    description: 'Elige tus sabores favoritos en cono o vaso.',
     avatarIcon: '🍦',
     avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&auto=format&fit=crop&q=80',
     level: 'Fácil',
     goals: [
-      { id: '1', label: 'Pedir 2 sabores en cono o vaso', completed: false },
-      { id: '2', label: 'Preguntar el precio y pagar', completed: false },
+      { id: '1', label: 'Pedir 2 sabores', completed: false },
+      { id: '2', label: 'Preguntar precio y pagar', completed: false },
     ],
   },
   {
@@ -43,13 +43,13 @@ const SCENARIOS: Scenario[] = [
     locationName: 'Milán',
     personaName: 'Elena',
     personaRole: 'Farmacéutica',
-    description: 'Explica una molestia leve y solicita un analgésico básico.',
+    description: 'Explica una molestia leve y pide un remedio.',
     avatarIcon: '💊',
     avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300&auto=format&fit=crop&q=80',
     level: 'Fácil',
     goals: [
-      { id: '1', label: 'Explicar qué síntoma tienes', completed: false },
-      { id: '2', label: 'Pedir algo para el dolor', completed: false },
+      { id: '1', label: 'Explicar tu dolor', completed: false },
+      { id: '2', label: 'Pedir medicamento', completed: false },
     ],
   },
 
@@ -60,14 +60,14 @@ const SCENARIOS: Scenario[] = [
     locationName: 'Nápoles',
     personaName: 'Giuseppe',
     personaRole: 'Camarero',
-    description: 'Reserva mesa, pide la auténtica pizza napolitana y solicita la cuenta.',
+    description: 'Pide mesa, ordena pizza napolitana y la cuenta.',
     avatarIcon: '🍕',
     avatarUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300&auto=format&fit=crop&q=80',
     level: 'Medio',
     goals: [
-      { id: '1', label: 'Pedir mesa para cenar', completed: false },
-      { id: '2', label: 'Ordenar la pizza y bebida', completed: false },
-      { id: '3', label: 'Solicitar la cuenta', completed: false },
+      { id: '1', label: 'Pedir mesa', completed: false },
+      { id: '2', label: 'Ordenar la pizza', completed: false },
+      { id: '3', label: 'Pedir la cuenta', completed: false },
     ],
   },
   {
@@ -76,13 +76,13 @@ const SCENARIOS: Scenario[] = [
     locationName: 'Turín',
     personaName: 'Sofia',
     personaRole: 'Recepcionista',
-    description: 'Realiza el registro de llegada y consulta los servicios del hotel.',
+    description: 'Realiza el registro y consulta servicios.',
     avatarIcon: '🏨',
     avatarUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=300&auto=format&fit=crop&q=80',
     level: 'Medio',
     goals: [
-      { id: '1', label: 'Confirmar tu reserva', completed: false },
-      { id: '2', label: 'Preguntar la clave de Wi-Fi y horario de desayuno', completed: false },
+      { id: '1', label: 'Confirmar reserva', completed: false },
+      { id: '2', label: 'Preguntar Wi-Fi y desayuno', completed: false },
     ],
   },
   {
@@ -91,13 +91,13 @@ const SCENARIOS: Scenario[] = [
     locationName: 'Bolonia',
     personaName: 'Alessandro',
     personaRole: 'Atención al Cliente',
-    description: 'Encuentra ingredientes típicos y pide embutido fresco al corte.',
+    description: 'Busca productos y pide embutido fresco.',
     avatarIcon: '🛒',
     avatarUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300&auto=format&fit=crop&q=80',
     level: 'Medio',
     goals: [
-      { id: '1', label: 'Preguntar dónde está un producto', completed: false },
-      { id: '2', label: 'Pedir 100g de prosciutto al corte', completed: false },
+      { id: '1', label: 'Preguntar ubicación de productos', completed: false },
+      { id: '2', label: 'Pedir 100g de prosciutto', completed: false },
     ],
   },
 
@@ -108,13 +108,13 @@ const SCENARIOS: Scenario[] = [
     locationName: 'Palermo',
     personaName: 'Roberto',
     personaRole: 'Agente de Alquiler',
-    description: 'Gestiona el alquiler de un coche y aclara coberturas de seguro.',
+    description: 'Gestiona un vehículo y resuelve dudas del seguro.',
     avatarIcon: '🚗',
     avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&auto=format&fit=crop&q=80',
     level: 'Experto',
     goals: [
-      { id: '1', label: 'Reportar o aclarar un daño previo del vehículo', completed: false },
-      { id: '2', label: 'Consultar cobertura de seguro completo', completed: false },
+      { id: '1', label: 'Aclarar daño previo', completed: false },
+      { id: '2', label: 'Consultar seguro completo', completed: false },
     ],
   },
   {
@@ -122,14 +122,14 @@ const SCENARIOS: Scenario[] = [
     title: 'Dal Medico',
     locationName: 'Génova',
     personaName: 'Dottoressa Bianchi',
-    personaRole: 'Médico de Cabecera',
-    description: 'Describe tu historial de síntomas y comprende la receta médica.',
+    personaRole: 'Médico',
+    description: 'Describe síntomas detallados y comprende el tratamiento.',
     avatarIcon: '🩺',
     avatarUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=300&auto=format&fit=crop&q=80',
     level: 'Experto',
     goals: [
-      { id: '1', label: 'Explicar síntomas detallados de varios días', completed: false },
-      { id: '2', label: 'Entender las indicaciones del tratamiento', completed: false },
+      { id: '1', label: 'Explicar síntomas', completed: false },
+      { id: '2', label: 'Entender indicación médica', completed: false },
     ],
   },
   {
@@ -138,13 +138,13 @@ const SCENARIOS: Scenario[] = [
     locationName: 'Milán',
     personaName: 'Andrea',
     personaRole: 'Reclutador HR',
-    description: 'Realiza una entrevista formal de trabajo utilizando el tratamiento de cortesía (Lei).',
+    description: 'Entrevista formal de trabajo usando el registro "Lei".',
     avatarIcon: '💼',
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80',
     level: 'Experto',
     goals: [
-      { id: '1', label: 'Presentar tu trayectoria laboral', completed: false },
-      { id: '2', label: 'Explicar tu motivación para el puesto', completed: false },
+      { id: '1', label: 'Presentar experiencia laboral', completed: false },
+      { id: '2', label: 'Explicar motivación para el puesto', completed: false },
     ],
   },
 ];
@@ -238,7 +238,7 @@ export function App() {
         setHintText(`Pista: ${data.hints[0].concept} (${data.hints[0].tip})`);
       }
     } catch (err) {
-      setHintText('Prueba respondiendo con educación en italiano.');
+      setHintText('Responde con educación en italiano.');
     }
   };
 
@@ -261,24 +261,28 @@ export function App() {
 
   if (!selectedScenario) {
     return (
-      <div className="min-h-screen bg-[#FAF6F0] p-6 flex flex-col items-center">
-        <header className="text-center my-6">
-          <h1 className="text-3xl font-black text-[#2B1E1A]">ParlaSubito AI 2.0</h1>
-          <p className="text-sm font-semibold text-[#2C4A52] mt-1">
-            Aprende italiano interactuando con personajes en escenarios reales.
+      <div className="min-h-screen bg-gradient-to-b from-[#0F2027] via-[#203A43] to-[#2C5364] p-4 sm:p-6 flex flex-col items-center">
+        {/* Banner Superior Estilo Mondly */}
+        <header className="w-full max-w-md bg-[#FF5A20] rounded-3xl p-6 text-center text-white shadow-2xl orange-glow mb-6">
+          <span className="text-xs font-black uppercase tracking-widest bg-black/20 px-3 py-1 rounded-full">
+            ParlaSubito AI 2.0
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-black mt-2 tracking-tight">Practicar Conversaciones</h1>
+          <p className="text-xs font-semibold text-orange-100 mt-1">
+            Habla con personajes nativos y mejora tu fluidez
           </p>
         </header>
 
         {/* Pestañas de Nivel */}
-        <div className="flex bg-[#EADFCF]/60 p-1 rounded-2xl mb-8 w-full max-w-md">
+        <div className="flex bg-[#122B48] p-1.5 rounded-2xl mb-6 w-full max-w-md border border-blue-500/30">
           {(['Fácil', 'Medio', 'Experto'] as const).map((lvl) => (
             <button
               key={lvl}
               onClick={() => setSelectedLevel(lvl)}
-              className={`flex-1 py-2.5 rounded-xl text-xs font-extrabold transition-all ${
+              className={`flex-1 py-2.5 rounded-xl text-xs font-black transition-all ${
                 selectedLevel === lvl
-                  ? 'bg-[#2C4A52] text-white shadow-md'
-                  : 'text-[#2B1E1A] hover:bg-white/40'
+                  ? 'bg-[#FF5A20] text-white shadow-lg orange-glow'
+                  : 'text-blue-200 hover:text-white hover:bg-blue-900/40'
               }`}
             >
               {lvl}
@@ -286,30 +290,35 @@ export function App() {
           ))}
         </div>
 
-        {/* Grilla de Escenarios con foto de personaje */}
-        <div className="w-full max-w-md space-y-4">
+        {/* Tarjetas de Escenarios */}
+        <div className="w-full max-w-md space-y-3.5">
           {filteredScenarios.map((sc) => (
             <button
               key={sc.id}
               onClick={() => startScenario(sc)}
-              className="w-full bg-white border-2 border-[#EADFCF] hover:border-[#E05A47] p-4 rounded-2xl shadow-sm text-left flex items-center gap-4 transition-all active:scale-98"
+              className="w-full blue-glass hover:border-[#FF5A20] p-4 rounded-2xl shadow-xl text-left flex items-center gap-4 transition-all active:scale-98 group"
             >
-              <img
-                src={sc.avatarUrl}
-                alt={sc.personaName}
-                className="w-16 h-16 rounded-2xl object-cover border-2 border-[#EADFCF] flex-shrink-0"
-              />
+              <div className="relative">
+                <img
+                  src={sc.avatarUrl}
+                  alt={sc.personaName}
+                  className="w-16 h-16 rounded-2xl object-cover border-2 border-orange-400/80 shadow-md group-hover:scale-105 transition-transform"
+                />
+                <span className="absolute -bottom-1 -right-1 text-base">{sc.avatarIcon}</span>
+              </div>
               <div className="flex-1">
                 <div className="flex justify-between items-center mb-0.5">
-                  <h3 className="text-base font-extrabold text-[#2B1E1A]">{sc.title}</h3>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FAF6F0] text-[#2C4A52] border border-[#EADFCF]">
+                  <h3 className="text-base font-black text-white group-hover:text-orange-400 transition-colors">
+                    {sc.title}
+                  </h3>
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
                     {sc.locationName}
                   </span>
                 </div>
-                <p className="text-xs font-bold text-[#E05A47] mb-1">
-                  {sc.personaName} • {sc.personaRole}
+                <p className="text-xs font-bold text-orange-400 mb-1">
+                  {sc.personaName} • <span className="text-blue-200 font-normal">{sc.personaRole}</span>
                 </p>
-                <p className="text-xs text-stone-500 leading-snug">{sc.description}</p>
+                <p className="text-xs text-blue-100/70 leading-snug">{sc.description}</p>
               </div>
             </button>
           ))}
@@ -319,17 +328,18 @@ export function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF6F0] flex flex-col justify-between">
+    <div className="min-h-screen bg-[#0A192F] text-white flex flex-col justify-between">
       <div>
-        <div className="p-2 bg-[#FAF6F0] flex justify-between items-center max-w-2xl mx-auto px-4">
+        {/* Barra superior de navegación */}
+        <div className="p-3 bg-[#0F2027] border-b border-blue-900/40 flex justify-between items-center max-w-2xl mx-auto px-4">
           <button
             onClick={() => setSelectedScenario(null)}
-            className="text-xs font-bold text-[#2C4A52] bg-white border border-[#EADFCF] px-3 py-1 rounded-full shadow-sm"
+            className="text-xs font-black text-white bg-[#FF5A20] hover:bg-orange-600 px-3.5 py-1.5 rounded-full shadow-md orange-glow transition-all"
           >
-            ← Cambiar Escena
+            ← Menú
           </button>
-          <span className="text-xs font-extrabold uppercase tracking-wider text-[#E05A47]">
-            Nivel: {selectedScenario.level}
+          <span className="text-xs font-black uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/30">
+            Nivel {selectedScenario.level}
           </span>
         </div>
 
@@ -338,14 +348,14 @@ export function App() {
 
         {hintText && (
           <div className="max-w-2xl mx-auto px-4 mb-2">
-            <div className="bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold p-2.5 rounded-xl flex justify-between items-center">
+            <div className="bg-amber-500/20 border border-amber-500/50 text-amber-200 text-xs font-bold p-3 rounded-2xl flex justify-between items-center shadow-lg">
               <span>{hintText}</span>
-              <button onClick={() => setHintText(null)} className="text-amber-700 font-bold ml-2">✕</button>
+              <button onClick={() => setHintText(null)} className="text-amber-400 font-bold ml-2">✕</button>
             </div>
           </div>
         )}
 
-        <main className="max-w-2xl mx-auto py-2">
+        <main className="max-w-2xl mx-auto py-3 px-2">
           {messages.map((m, idx) =>
             m.sender === 'ai' ? (
               <CharacterBubble
@@ -356,9 +366,9 @@ export function App() {
                 onPlayAudio={handlePlayAudio}
               />
             ) : (
-              <div key={idx} className="flex justify-end my-2 mx-4">
-                <div className="bg-[#2C4A52] text-white p-3 rounded-2xl rounded-tr-none max-w-xs shadow-sm">
-                  <p className="text-sm font-medium">{m.text}</p>
+              <div key={idx} className="flex justify-end my-3 mx-2">
+                <div className="bg-[#1E88E5] text-white p-3.5 rounded-2xl rounded-tr-none max-w-xs shadow-lg border border-blue-400/30">
+                  <p className="text-sm font-semibold">{m.text}</p>
                 </div>
               </div>
             )
