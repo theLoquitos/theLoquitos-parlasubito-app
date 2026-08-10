@@ -1,54 +1,90 @@
 import React from 'react';
+import { Bot, User, Volume2, Sparkles, Plus } from 'lucide-react';
+import { ChatMessage } from '../types';
+import { FloatingCorrectionCard } from './FloatingCorrectionCard';
 
 interface CharacterBubbleProps {
-  personaName: string;
-  replyText: string;
-  translationText?: string;
+  message: ChatMessage;
   onPlayAudio?: (text: string) => void;
+  onSelectSuggestion?: (text: string) => void;
+  onSavePhrase?: (italian: string, spanish: string) => void;
 }
 
-export function CharacterBubble({
-  personaName,
-  replyText,
-  translationText,
+export const CharacterBubble: React.FC<CharacterBubbleProps> = ({
+  message,
   onPlayAudio,
-}: CharacterBubbleProps) {
+  onSelectSuggestion,
+  onSavePhrase,
+}) => {
+  const isAI = message.sender === 'ai';
+
   return (
-    <div className="flex items-start gap-3 my-3 px-2 max-w-2xl mx-auto">
-      {/* Contenedor principal de la respuesta (Estilo Mondly) */}
-      <div className="flex-1 bg-[#122B48]/90 border border-blue-400/20 rounded-2xl p-4 shadow-xl backdrop-blur-md flex items-center justify-between gap-3">
-        <div className="flex-1">
-          {/* Nombre del personaje */}
-          <span className="text-[10px] font-black uppercase tracking-wider text-orange-400 block mb-1">
-            {personaName}
-          </span>
-
-          {/* Texto principal en Italiano */}
-          <p className="text-white font-extrabold text-base sm:text-lg leading-snug tracking-wide">
-            {replyText}
-          </p>
-
-          {/* Traducción al Español */}
-          {translationText && (
-            <p className="text-[#8ECAE6] text-xs font-semibold mt-1.5 leading-snug">
-              {translationText}
-            </p>
-          )}
+    <div className={`flex flex-col ${isAI ? 'items-start' : 'items-end'} space-y-1.5 my-3`}>
+      <div className={`flex items-center space-x-2 ${isAI ? 'flex-row' : 'flex-row-reverse space-x-reverse'}`}>
+        <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${
+          isAI ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'
+        }`}>
+          {isAI ? <Bot className="w-4 h-4" /> : <User className="w-4 h-4" />}
         </div>
+        <span className="text-[11px] font-medium text-slate-400">
+          {isAI ? 'Tutor ParlaSubito' : 'Tú'}
+        </span>
+      </div>
 
-        {/* Botón de reproducción de audio */}
-        {onPlayAudio && (
-          <button
-            onClick={() => onPlayAudio(replyText)}
-            className="w-10 h-10 rounded-full bg-[#00D2FF] hover:bg-[#00B4D8] text-[#0A192F] flex items-center justify-center text-sm shadow-lg shadow-cyan-500/30 transition-all active:scale-90 shrink-0 font-bold"
-            title="Escuchar audio"
-          >
-            🔊
-          </button>
+      {message.correction && <FloatingCorrectionCard correction={message.correction} />}
+
+      <div className={`max-w-[88%] sm:max-w-[78%] p-4 rounded-2xl text-sm leading-relaxed shadow-sm relative ${
+        isAI
+          ? 'bg-slate-900 text-slate-100 border border-slate-800 rounded-tl-sm'
+          : 'bg-emerald-600 text-white rounded-tr-sm'
+      }`}>
+        <p className="whitespace-pre-wrap">{message.text}</p>
+
+        {isAI && (
+          <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-xs">
+            {onPlayAudio && (
+              <button
+                onClick={() => onPlayAudio(message.text)}
+                className="inline-flex items-center space-x-1.5 text-emerald-400 hover:text-emerald-300 font-medium transition"
+              >
+                <Volume2 className="w-3.5 h-3.5" />
+                <span>Escuchar pronunciación</span>
+              </button>
+            )}
+
+            {onSavePhrase && (
+              <button
+                onClick={() => onSavePhrase(message.text, 'Frase de tutoría')}
+                className="inline-flex items-center space-x-1 text-slate-400 hover:text-amber-400 transition text-[11px]"
+              >
+                <Plus className="w-3 h-3" />
+                <span>Guardar frase</span>
+              </button>
+            )}
+          </div>
         )}
       </div>
+
+      {isAI && message.suggestedReplies && message.suggestedReplies.length > 0 && (
+        <div className="mt-2 pl-2 space-y-1.5 max-w-[88%]">
+          <p className="text-[11px] font-medium text-slate-400 flex items-center space-x-1">
+            <Sparkles className="w-3 h-3 text-amber-400" />
+            <span>Sugerencias para responder:</span>
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {message.suggestedReplies.map((reply, idx) => (
+              <button
+                key={idx}
+                onClick={() => onSelectSuggestion && onSelectSuggestion(reply.italian)}
+                className="text-left bg-slate-900/90 border border-emerald-500/30 hover:border-emerald-400 hover:bg-slate-800/90 p-2.5 rounded-xl transition text-xs group"
+              >
+                <p className="font-semibold text-emerald-300 group-hover:text-emerald-200">{reply.italian}</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">{reply.spanish}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
-}
-
-export default CharacterBubble;
+};
