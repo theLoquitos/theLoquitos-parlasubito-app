@@ -1,38 +1,61 @@
-export type AvatarState = 'HAPPY' | 'TEACHING' | 'THINKING' | 'CELEBRATING';
-
-export interface Correction {
-  hasError: boolean;
-  originalText: string;
-  correctedText: string;
-  explanation: string;
-}
-
-export interface CoachingTip {
-  advice: string;
-  naturalAlternative: string;
-}
+export type Difficulty = 'Principiante' | 'Intermedio' | 'Avanzado' | 'Fácil' | 'Medio' | 'Experto';
 
 export interface Goal {
   id: string;
-  label: string;
-  completed: boolean;
+  title: string;
+  description?: string;
+  completed?: boolean;
 }
 
 export interface Scenario {
   id: string;
   title: string;
-  locationName: string;
-  personaName: string;
-  personaRole: string;
-  description: string;
-  avatarIcon: string;
-  avatarUrl: string;
-  level: 'Fácil' | 'Medio' | 'Experto';
+  subtitle: string;
+  icon: string;
+  difficulty: Difficulty;
+  category: string;
+  promptContext: string;
   goals: Goal[];
 }
 
-export interface Message {
-  sender: 'user' | 'ai';
+export interface CorrectionInfo {
+  original: string;
+  corrected: string;
+  explanation: string;
+  grammarRule?: string;
+}
+
+export type Correction = CorrectionInfo;
+
+export interface SuggestedReply {
+  italian: string;
+  spanish: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  sender: 'user' | 'ai' | 'system';
   text: string;
-  translation?: string;
+  audioUrl?: string;
+  timestamp: Date | string;
+  correction?: CorrectionInfo;
+  suggestedReplies?: SuggestedReply[];
+}
+
+export interface UserSettings {
+  targetLanguage: string;
+  nativeLanguage: string;
+  voiceGender: 'male' | 'female';
+  speechSpeed: number;
+  autoPlayAudio: boolean;
+  showTranslations: boolean;
+  difficulty: Difficulty;
+}
+
+export interface SavedPhrase {
+  id: string;
+  original: string;
+  translation: string;
+  context?: string;
+  createdAt: string;
 }
