@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: parlasubito-app
+    name: parlosubito-app
     env: node
     region: frankfurt
     plan: free
