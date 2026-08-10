@@ -1,4 +1,4 @@
-export type Difficulty = 'Principiante' | 'Intermedio' | 'Avanzado' | 'Fácil' | 'Medio' | 'Experto';
+export type Difficulty = 'Principiante' | 'Intermedio' | 'Avanzado';
 
 export interface Goal {
   id: string;
@@ -25,8 +25,6 @@ export interface CorrectionInfo {
   grammarRule?: string;
 }
 
-export type Correction = CorrectionInfo;
-
 export interface SuggestedReply {
   italian: string;
   spanish: string;
@@ -40,16 +38,6 @@ export interface ChatMessage {
   timestamp: Date | string;
   correction?: CorrectionInfo;
   suggestedReplies?: SuggestedReply[];
-}
-
-export interface UserSettings {
-  targetLanguage: string;
-  nativeLanguage: string;
-  voiceGender: 'male' | 'female';
-  speechSpeed: number;
-  autoPlayAudio: boolean;
-  showTranslations: boolean;
-  difficulty: Difficulty;
 }
 
 export interface SavedPhrase {
