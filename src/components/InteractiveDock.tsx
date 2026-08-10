@@ -1,173 +1,127 @@
-import React, { useState, useEffect, useRef } from 'react';
-
-interface SpeechRecognitionEvent {
-  results: {
-    [index: number]: {
-      [index: number]: {
-        transcript: string;
-      };
-    };
-  };
-}
-
-interface SpeechRecognitionErrorEvent {
-  error: string;
-}
+import React, { useState } from 'react';
+import { Send, Mic, RefreshCw, BookOpen } from 'lucide-react';
 
 interface InteractiveDockProps {
   onSendMessage: (text: string) => void;
-  onRequestHint: () => void;
   isLoading: boolean;
+  onResetChat?: () => void;
+  savedCount?: number;
+  onOpenVocabulary?: () => void;
 }
 
-export function InteractiveDock({
+export const InteractiveDock: React.FC<InteractiveDockProps> = ({
   onSendMessage,
-  onRequestHint,
   isLoading,
-}: InteractiveDockProps) {
-  const [inputText, setInputText] = useState('');
-  const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useRef<any>(null);
-
-  useEffect(() => {
-    // Soporte para Web Speech API en Chrome, Safari y Edge
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = true;
-      recognition.lang = 'it-IT'; // Reconocimiento nativo en italiano
-
-      recognition.onresult = (event: SpeechRecognitionEvent) => {
-        const transcript = Array.from(event.results)
-          .map((result) => result[0].transcript)
-          .join('');
-        setInputText(transcript);
-      };
-
-      recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-        console.error('Error de micrófono:', event.error);
-        setIsListening(false);
-      };
-
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-
-      recognitionRef.current = recognition;
-    }
-  }, []);
-
-  const toggleListening = () => {
-    if (!recognitionRef.current) {
-      alert('Tu navegador no soporta entrada por micrófono. Te recomendamos Chrome, Edge o Safari.');
-      return;
-    }
-
-    if (isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-    } else {
-      try {
-        recognitionRef.current.start();
-        setIsListening(true);
-      } catch (err) {
-        console.error('Error al activar micrófono:', err);
-      }
-    }
-  };
+  onResetChat,
+  savedCount = 0,
+  onOpenVocabulary,
+}) => {
+  const [input, setInput] = useState('');
+  const [isRecording, setIsRecording] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputText.trim() || isLoading) return;
-    onSendMessage(inputText.trim());
-    setInputText('');
+    if (!input.trim() || isLoading) return;
+    onSendMessage(input.trim());
+    setInput('');
+  };
+
+  const toggleRecording = () => {
+    if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+      alert('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.');
+      return;
+    }
+
+    if (isRecording) {
+      setIsRecording(false);
+      return;
+    }
+
+    try {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'it-IT';
+      recognition.interimResults = false;
+
+      recognition.onstart = () => setIsRecording(true);
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(transcript);
+        setIsRecording(false);
+      };
+      recognition.onerror = () => setIsRecording(false);
+      recognition.onend = () => setIsRecording(false);
+
+      recognition.start();
+    } catch {
+      setIsRecording(false);
+    }
   };
 
   return (
-    <div className="sticky bottom-0 bg-white border-t border-[#EADFCF] p-3 shadow-lg">
-      <div className="max-w-2xl mx-auto flex flex-col gap-2">
+    <div className="bg-slate-900/95 border-t border-slate-800 p-3 sm:p-4 backdrop-blur-md">
+      <div className="max-w-4xl mx-auto space-y-2">
         <form onSubmit={handleSubmit} className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onRequestHint}
-            className="px-3 py-2 bg-[#FAF6F0] hover:bg-[#EADFCF] text-[#2C4A52] text-xs font-bold rounded-xl border border-[#EADFCF] transition-all flex items-center gap-1"
-            title="Pedir pista conceptual"
-          >
-            💡 <span className="hidden sm:inline">Pista</span>
-          </button>
+          {onResetChat && (
+            <button
+              type="button"
+              onClick={onResetChat}
+              title="Reiniciar chat"
+              className="p-2.5 text-slate-400 hover:text-white bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 rounded-xl transition shrink-0"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
+          )}
+
+          {onOpenVocabulary && (
+            <button
+              type="button"
+              onClick={onOpenVocabulary}
+              title="Vocabulario guardado"
+              className="relative p-2.5 text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl transition shrink-0"
+            >
+              <BookOpen className="w-4 h-4" />
+              {savedCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-slate-950 font-bold text-[10px] rounded-full flex items-center justify-center">
+                  {savedCount}
+                </span>
+              )}
+            </button>
+          )}
 
           <div className="relative flex-1">
             <input
               type="text"
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              placeholder={isListening ? 'Escuchando en italiano...' : 'Escribe o habla en italiano...'}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Escribe tu mensaje en italiano..."
               disabled={isLoading}
-              className={`w-full py-2.5 pl-4 pr-10 text-sm bg-[#FAF6F0] border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A52] text-[#2B1E1A] ${
-                isListening ? 'border-red-400 ring-2 ring-red-300' : 'border-[#EADFCF]'
-              }`}
+              className="w-full bg-slate-950 text-white placeholder-slate-500 border border-slate-800 focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 rounded-xl px-4 py-2.5 text-sm outline-none transition disabled:opacity-50"
             />
-
-            {/* Botón de Micrófono (STT) */}
-            <button
-              type="button"
-              onClick={toggleListening}
-              className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-all ${
-                isListening
-                  ? 'bg-red-500 text-white animate-pulse'
-                  : 'text-stone-400 hover:text-[#E05A47]'
-              }`}
-              title={isListening ? 'Detener micrófono' : 'Hablar en italiano'}
-            >
-              🎤
-            </button>
           </div>
 
           <button
-            type="submit"
-            disabled={!inputText.trim() || isLoading}
-            className="px-4 py-2.5 bg-[#E05A47] hover:bg-[#c94b3a] disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-sm transition-all"
+            type="button"
+            onClick={toggleRecording}
+            className={`p-2.5 rounded-xl border transition shrink-0 ${
+              isRecording
+                ? 'bg-red-500/20 text-red-400 border-red-500/40 animate-pulse'
+                : 'bg-slate-800/80 text-slate-300 hover:text-emerald-400 border-slate-700/60'
+            }`}
+            title="Hablar en italiano"
           >
-            {isLoading ? '...' : 'Enviar'}
+            <Mic className="w-4 h-4" />
+          </button>
+
+          <button
+            type="submit"
+            disabled={!input.trim() || isLoading}
+            className="p-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl transition disabled:opacity-40 disabled:hover:bg-emerald-600 shrink-0 shadow-md shadow-emerald-900/30"
+          >
+            <Send className="w-4 h-4" />
           </button>
         </form>
       </div>
     </div>
   );
-}
-// Fragmento para grabar audio en Blob -> Base64
-const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
-
-const startRecording = async () => {
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
-  const audioChunks: Blob[] = [];
-
-  recorder.ondataavailable = (event) => audioChunks.push(event.data);
-  recorder.onstop = async () => {
-    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-    const reader = new FileReader();
-    reader.readAsDataURL(audioBlob);
-    reader.onloadend = async () => {
-      const base64Audio = (reader.result as string).split(',')[1];
-      
-      // Enviar a la API para evaluación
-      const response = await fetch('/api/evaluate-pronunciation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          audioBase64: base64Audio,
-          expectedText: inputText,
-        }),
-      });
-      const evalData = await response.json();
-      console.log('Evaluación de pronunciación:', evalData);
-    };
-  };
-
-  recorder.start();
-  setMediaRecorder(recorder);
 };
