@@ -6,12 +6,20 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 10000;
+const PORT = Number(process.env.PORT) || 10000;
 
 app.use(express.json());
 
-// API Endpoint para comunicarse con Gemini AI
-app.post('/api/chat', async (req: Request, res: Response) => {
+interface ChatRequestBody {
+  message: string;
+  scenarioContext?: string;
+  history?: Array<{
+    sender: string;
+    text: string;
+  }>;
+}
+
+app.post('/api/chat', async (req: Request<{}, {}, ChatRequestBody>, res: Response): Promise<void> => {
   try {
     const { message, scenarioContext, history } = req.body;
     const apiKey = process.env.GEMINI_API_KEY;
@@ -22,31 +30,35 @@ app.post('/api/chat', async (req: Request, res: Response) => {
     }
 
     const systemPrompt = `
-Sos un tutor de italiano nativo, amable y paciente. El contexto actual es: "${scenarioContext || 'Conversación general'}".
-Responde al usuario en italiano de manera natural. Si detectas un error gramatical u ortográfico en su mensaje, genera una corrección.
+Sos un tutor de italiano nativo, amable y paciente. El contexto de interacción es: "${scenarioContext || 'Conversación general'}".
+Responde al usuario en italiano fluido. Si el usuario comete un error gramatical u ortográfico, genera una corrección constructiva.
 
-DEBES responder ÚNICAMENTE en formato JSON con la siguiente estructura:
+DEBES responder strictly en formato JSON con la siguiente estructura:
 {
   "text": "Tu respuesta en italiano",
   "correction": null o {
-    "original": "Frase original con error",
+    "original": "Frase original del usuario",
     "corrected": "Frase corregida",
-    "explanation": "Explicación breve en español del error",
-    "grammarRule": "Regla gramatical"
+    "explanation": "Explicación breve en español",
+    "grammarRule": "Regla gramatical relevante"
   },
   "suggestedReplies": [
-    {"italian": "Opción 1 en italiano", "spanish": "Traducción al español"},
-    {"italian": "Opción 2 en italiano", "spanish": "Traducción al español"}
+    {"italian": "Respuesta sugerida 1", "spanish": "Traducción 1"},
+    {"italian": "Respuesta sugerida 2", "spanish": "Traducción 2"}
   ]
 }
-Si el usuario no comete errores, la clave "correction" debe ser null.
+Si no hay errores, el campo "correction" debe ser null.
     `.trim();
 
     const requestBody = {
       contents: [
         {
           role: 'user',
-          parts: [{ text: `${systemPrompt}\n\nHistorial previo:\n${JSON.stringify(history || [])}\n\nMensaje actual del usuario: "${message}"` }]
+          parts: [
+            {
+              text: `${systemPrompt}\n\nHistorial previo:\n${JSON.stringify(history || [])}\n\nMensaje del usuario: "${message}"`
+            }
+          ]
         }
       ],
       generationConfig: {
@@ -65,8 +77,8 @@ Si el usuario no comete errores, la clave "correction" debe ser null.
 
     if (!apiResponse.ok) {
       const errorText = await apiResponse.text();
-      console.error('Error desde Gemini API:', errorText);
-      res.status(500).json({ error: 'Error al procesar la respuesta de la IA.' });
+      console.error('Error desde la API de Gemini:', errorText);
+      res.status(500).json({ error: 'Error al procesar la respuesta con el modelo de IA.' });
       return;
     }
 
@@ -84,18 +96,19 @@ Si el usuario no comete errores, la clave "correction" debe ser null.
       });
     }
   } catch (error) {
-    console.error('Error interno del servidor:', error);
+    console.error('Error en el servidor backend:', error);
     res.status(500).json({ error: 'Error interno en el servidor.' });
   }
 });
 
-// Servir archivos estáticos de la app en producción
-app.use(express.static(path.join(__dirname, 'dist')));
+// En el bundle ESM (server.mjs) alojado en server-dist/, dist/ está en el directorio padre
+const distPath = path.join(__dirname, '../dist');
+app.use(express.static(distPath));
 
 app.get('*', (_req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  res.sendFile(path.join(distPath, 'index.html'));
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`[ParlaSubito Server] ESM Server corriendo en puerto ${PORT}`);
 });
