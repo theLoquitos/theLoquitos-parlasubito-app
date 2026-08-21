@@ -1,49 +1,39 @@
-export type Difficulty = 'Principiante' | 'Intermedio' | 'Avanzado';
+export interface NPC {
+  name: string;
+  role: string;
+  avatar?: string;
+  personality?: string;
+}
+
+export interface VocabularyItem {
+  word: string;
+  translation: string;
+}
 
 export interface Goal {
   id: string;
-  title: string;
-  description?: string;
-  completed?: boolean;
+  description: string;
+  completed: boolean;
 }
 
 export interface Scenario {
   id: string;
   title: string;
-  subtitle: string;
-  icon: string;
-  difficulty: Difficulty;
-  category: string;
-  promptContext: string;
-  goals: Goal[];
+  level: string;
+  context: string;
+  objective: string;
+  npc: NPC;
+  vocabulary: VocabularyItem[];
+  systemPrompt: string;
+  initialMessage: string;
+  goals?: Goal[];
+  xpReward?: number;
+  starsReward?: number;
 }
 
-export interface CorrectionInfo {
-  original: string;
-  corrected: string;
-  explanation: string;
-  grammarRule?: string;
-}
-
-export interface SuggestedReply {
-  italian: string;
-  spanish: string;
-}
-
-export interface ChatMessage {
+export interface Message {
   id: string;
-  sender: 'user' | 'ai' | 'system';
+  sender: 'npc' | 'player' | 'companion';
   text: string;
-  audioUrl?: string;
-  timestamp: Date | string;
-  correction?: CorrectionInfo;
-  suggestedReplies?: SuggestedReply[];
-}
-
-export interface SavedPhrase {
-  id: string;
-  original: string;
-  translation: string;
-  context?: string;
-  createdAt: string;
+  timestamp: string;
 }
