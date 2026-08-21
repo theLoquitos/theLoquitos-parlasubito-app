@@ -3,11 +3,11 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "scripts": {
-  "clean": "rimraf dist server-dist",
-  "build": "npm run clean && vite build && esbuild server.ts --bundle --platform=node --target=node20 --outfile=server-dist/server.cjs",
-  "start": "node server-dist/server.cjs"
-},
+ "scripts": {
+    "clean": "rimraf dist server-dist",
+    "build": "npm run clean && vite build && esbuild server.ts --bundle --platform=node --target=node20 --outfile=server-dist/server.cjs --banner:js=\"const import_meta_url = require('url').pathToFileURL(__filename).toString();\" --define:import.meta.url=import_meta_url",
+    "start": "node server-dist/server.cjs"
+  },
   "dependencies": {
     "express": "^4.19.2",
     "lucide-react": "^0.344.0",
